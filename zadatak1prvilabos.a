@@ -1,0 +1,83 @@
+                ORG     0
+
+                MOV     R0, #0X500      
+                MOV     R1, #0X1000     
+                LDR     R2, EXIT
+                MOV     R7, #0X10000   
+
+PETLJA          LDR     R3, [R0], #4    
+                CMP     R3, R2          
+                BEQ     END
+
+                LDR     R4, [R0], #4    
+                LDR     R5, [R0], #4
+        
+        
+                CMP     R3, #0
+                BEQ     PLUS
+        
+                CMP     R3, #1
+                BEQ     MINUS
+        
+                CMP     R3, #2
+                BEQ     MULTIPLY
+        
+                CMP     R4, #3
+                BL      DIVIDE
+                B       STORE
+
+        
+
+
+
+PLUS            ADD R6,R4,R5
+                B STORE
+MINUS           SUB     R6, R4, R5
+                B       STORE
+MULTIPLY        MUL     R6, R4, R5
+                B       STORE
+
+
+DIVIDE  
+                STMFD   R7!, {R4, R5, R8} 
+
+                MOV     R8, #0          
+                MOV     R6, #0          
+
+                CMP     R5, #0          
+                BEQ     CONTINUE
+        
+
+                CMP     R4, #0
+                BGE     MOVE
+                ADD     R8, R8, #1
+                SUB     R4, R4, #1
+                MVN     R4, R4
+
+
+D               SUBS    R4, R4, R5
+                ADDGE   R6, R6, #1
+                BGE     D
+
+                CMP     R8, #1
+                BNE     CONTINUE
+                MVN     R6, R6
+                ADD     R6, R6, #1
+
+CONTINUE        LDMFD   R7!, {R4, R5, R8}
+                MOV     PC, LR
+MOVE            CMP     R5, #0
+                BGE     D
+                ADD     R8, R8, #1
+                SUB     R5, R5, #1
+                MVN     R5, R5
+                            
+STORE           STR     R6, [R1], #4
+                B       PETLJA
+
+END             MVN     R2, #0          
+                STR     R2, [R1], #4
+                SWI     0X123456
+
+                ORG     0X400
+EXIT            DW      0X80808080      
